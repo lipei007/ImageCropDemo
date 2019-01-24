@@ -67,17 +67,6 @@ CGFloat effectiveTouch = 20.f;
     return _cropRect;
 }
 
-//- (void)setCropRect:(CGRect)cropRect {
-//    _cropRect = cropRect;
-//
-//    UIBezierPath *path = [UIBezierPath bezierPathWithRect:self.bounds];
-//    UIBezierPath *subPath = [UIBezierPath bezierPathWithRect:self.cropRect];
-//    [path appendPath:subPath];
-//
-//    self.maskLayer.path = path.CGPath;
-//    self.cropLayer.path = subPath.CGPath;
-//}
-
 - (CGSize)imgScreenSize {
     if (self.img == nil || CGRectEqualToRect(CGRectZero, self.bounds)) {
         return CGSizeZero;
@@ -195,11 +184,7 @@ CGFloat effectiveTouch = 20.f;
     _img = img;
     self.imgView.image = img;
     
-    CGFloat width = CGRectGetWidth(self.bounds);
-    CGFloat height = CGRectGetHeight(self.bounds);
-    
-    CGSize imgScreenSize = self.imgScreenSize;
-    self.cropRect = CGRectMake((width - imgScreenSize.width) * 0.5, (height - imgScreenSize.height) * 0.5, imgScreenSize.width, imgScreenSize.height);
+    [self resetCropRect];
     
     [self.maskLayer addSublayer:self.cropLayer];
     [self.layer addSublayer:self.maskLayer];
@@ -207,10 +192,20 @@ CGFloat effectiveTouch = 20.f;
     [self updateCropView];
 }
 
-
-
-- (void)drawRect:(CGRect)rect {
+- (void)layoutSubviews {
+    [super layoutSubviews];
     
+    [self resetCropRect];
+    [self updateCropView];
+}
+
+- (void)resetCropRect {
+    
+    CGFloat width = CGRectGetWidth(self.bounds);
+    CGFloat height = CGRectGetHeight(self.bounds);
+    
+    CGSize imgScreenSize = self.imgScreenSize;
+    self.cropRect = CGRectMake((width - imgScreenSize.width) * 0.5, (height - imgScreenSize.height) * 0.5, imgScreenSize.width, imgScreenSize.height);
 }
 
 - (void)updateCropView {
@@ -369,7 +364,7 @@ CGFloat effectiveTouch = 20.f;
     }
     
     CGImageRef clipedImageRef = CGImageCreateWithImageInRect(img.CGImage, rect);
-    UIImage *clipedImage = [UIImage imageWithCGImage:clipedImageRef scale:[UIScreen mainScreen].scale orientation:UIImageOrientationUp];
+    UIImage *clipedImage = [UIImage imageWithCGImage:clipedImageRef scale:img.scale orientation:img.imageOrientation];
     CGImageRelease(clipedImageRef);
     
     return clipedImage;
